@@ -5,10 +5,10 @@
 //-----------------------------PPM CONFIGURATION-----------------------------------
 #define channel_number 8  //set the number of channels, in this case: 4 channels
 #define sigPin 2          //set PPM signal output pin on the arduino
-#define PPM_FrLen 22500   //set the PPM frame length in microseconds (1ms = 1000µs)
+#define PPM_FrLen 25000   //set the PPM frame length in microseconds (1ms = 1000µs)
 #define PPM_PulseLen 300  //set the pulse length
 //---------------------------------------------------------------------------------
-#define clockMultiplier 2  // set this to 2 if you are using a 16MHz arduino, leave as 1 for an 8MHz arduino
+#define clockMultiplier 1  // set this to 2 if you are using a 16MHz arduino, leave as 1 for an 8MHz arduino
 
 int ppm[channel_number];
 unsigned long lastRecvTime = 0;
