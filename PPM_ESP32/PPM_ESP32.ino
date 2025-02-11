@@ -67,7 +67,7 @@ void IRAM_ATTR onPpmTimer() {
     ppmChannel++;
     ppmState = PPM_STATE_PULSE;
 
-    if (ppmChannel >= PPM_CHANNELS) {
+    if (ppmChannel > PPM_CHANNELS) {
       ppmChannel = 0;
       timerAlarmWrite(timer, PPM_FRAME_LENGTH - usedFrameLength, true);
       usedFrameLength = 0;
