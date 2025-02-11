@@ -4,6 +4,7 @@
 RF24 radio(6, 7);
 const uint64_t pipeIn = 0xE8E8F0F0E1LL;
 
+//#define SerialOUTPUT
 #define PPM_FRAME_LENGTH 22500
 #define PPM_PULSE_LENGTH 300
 #define PPM_CHANNELS 8
@@ -101,14 +102,18 @@ void reset_received_Data() {
 }
 
 void setup() {
+#ifdef SerialOUTPUT
   Serial.begin(115200);
+#endif
   //SPI.begin(8, 5, 10, 7);  // SCK=8, MISO=5, MOSI=10, CSN=7
   pinMode(OUTPUT_PIN, OUTPUT);
 
   reset_received_Data();
 
   if (!radio.begin()) {
+#ifdef SerialOUTPUT
     Serial.println("NRF24L01 hatası");
+#endif
     while (1)
       ;
   }
@@ -137,7 +142,9 @@ void loop() {
     channelValue[6] = map(receiverData.ch7, 0, 1, 1000, 2000);
     channelValue[7] = map(receiverData.ch8, 0, 1, 1000, 2000);
 
+#ifdef SerialOUTPUT
     Serial.printf("Channel Values: %d %d %d %d %d %d %d %d\n", channelValue[0], channelValue[1], channelValue[2], channelValue[3], channelValue[4], channelValue[5], channelValue[6], channelValue[7]);
+#endif
 
     lastRecvTime = millis();
   }
@@ -145,6 +152,8 @@ void loop() {
   unsigned long now = millis();
   if (now - lastRecvTime > 1000) {
     reset_received_Data();
+#ifdef SerialOUTPUT
     Serial.println("Disconnected");
+#endif
   }
 }
