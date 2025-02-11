@@ -1,13 +1,16 @@
 #include <nRF24L01.h>
 #include <RF24.h>
-RF24 radio(4, 5);
+//#include <SPI.h>
+RF24 radio(6, 7);
 const uint64_t pipeIn = 0xE8E8F0F0E1LL;
 
 #define PPM_FRAME_LENGTH 22500
 #define PPM_PULSE_LENGTH 300
 #define PPM_CHANNELS 8
 #define DEFAULT_CHANNEL_VALUE 1500
-#define OUTPUT_PIN 14
+#define OUTPUT_PIN 1
+
+unsigned long lastRecvTime = 0;
 
 struct PacketData {
   byte ch1;
@@ -77,9 +80,32 @@ void IRAM_ATTR onPpmTimer() {
   digitalWrite(OUTPUT_PIN, ppmOutput);
 }
 
+void reset_received_Data() {
+  receiverData.ch1 = 0;  //Throttle
+  receiverData.ch2 = 127;
+  receiverData.ch3 = 127;
+  receiverData.ch4 = 127;
+  receiverData.ch5 = 0;
+  receiverData.ch6 = 0;
+  receiverData.ch7 = 0;
+  receiverData.ch8 = 0;
+
+  channelValue[0] = 1000;
+  channelValue[1] = 1500;
+  channelValue[2] = 1500;
+  channelValue[3] = 1500;
+  channelValue[4] = 1000;
+  channelValue[5] = 1000;
+  channelValue[6] = 1000;
+  channelValue[7] = 1000;
+}
+
 void setup() {
   Serial.begin(115200);
+  //SPI.begin(8, 5, 10, 7);  // SCK=8, MISO=5, MOSI=10, CSN=7
   pinMode(OUTPUT_PIN, OUTPUT);
+
+  reset_received_Data();
 
   if (!radio.begin()) {
     Serial.println("NRF24L01 hatası");
@@ -88,6 +114,7 @@ void setup() {
   }
 
   radio.setAutoAck(false);
+  radio.setPALevel(RF24_PA_MAX);
   radio.setDataRate(RF24_250KBPS);
   radio.openReadingPipe(1, pipeIn);
   radio.startListening();
@@ -110,8 +137,14 @@ void loop() {
     channelValue[6] = map(receiverData.ch7, 0, 1, 1000, 2000);
     channelValue[7] = map(receiverData.ch8, 0, 1, 1000, 2000);
 
-    Serial.printf("Channel Values: %d %d %d %d %d %d %d %d\n",
-                  channelValue[0], channelValue[1], channelValue[2], channelValue[3],
-                  channelValue[4], channelValue[5], channelValue[6], channelValue[7]);
+    Serial.printf("Channel Values: %d %d %d %d %d %d %d %d\n", channelValue[0], channelValue[1], channelValue[2], channelValue[3], channelValue[4], channelValue[5], channelValue[6], channelValue[7]);
+
+    lastRecvTime = millis();
+  }
+
+  unsigned long now = millis();
+  if (now - lastRecvTime > 1000) {
+    reset_received_Data();
+    Serial.println("Disconnected");
   }
 }
